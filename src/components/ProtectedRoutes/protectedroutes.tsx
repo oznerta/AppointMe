@@ -22,7 +22,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
         if (location.pathname === '/waiting-for-approval') {
             return <>{children}</>; // Render WaitingApproval component
         }
-        return <Navigate to="/waiting-for-approval" />; // Redirect to WaitingApproval page for merchants
+        // Redirect to WaitingApproval page for merchants with pending status
+        return <Navigate to="/waiting-for-approval" />;
+    }
+
+    // If the user is a merchant and their status is incomplete
+    if (role === 'merchant' && status === 'incomplete') {
+        // Allow access to the merchantDetails page
+        if (location.pathname === '/merchant/details') {
+            return <>{children}</>; // Render merchantDetails component
+        }
+        // If trying to access any other route, redirect to merchantDetails
+        if (location.pathname !== '/merchant/details') {
+            return <Navigate to="/merchant/details" />;
+        }
     }
 
     // Check if the user has the required role and is approved

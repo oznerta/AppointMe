@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
+import { createUserDocument } from '@/lib/firebase/utils';
 
 export function SignInPage() {
     const navigate = useNavigate();
@@ -28,20 +29,26 @@ export function SignInPage() {
     const handleGoogleSignIn = async () => {
         const provider = new GoogleAuthProvider();
         try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-
-            const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
-            setIsAuth(true);
-
-            if (isNewUser) {
-                navigate('/merchantdetails');
-            }
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+      
+          const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
+          setIsAuth(true);
+      
+          if (isNewUser) {
+            // Create user document in Firestore for new users
+            await createUserDocument(user); // Function to create user document
+            navigate('/merchant/details'); // Redirect new users to the Merchant Details page
+          } else {
+            navigate('/merchant/dashboard');
+          }
         } catch (error) {
-            console.error("Error signing in with Google:", error);
-            setErrorMessage("Error signing in with Google. Please try again.");
+          console.error("Error signing in with Google:", error);
+          setErrorMessage("Error signing in with Google. Please try again.");
         }
-    };
+      };
+      
+    
 
     return (
         <div className="flex items-center justify-center h-screen">

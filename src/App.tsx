@@ -12,6 +12,7 @@ import ServiceManagement from './Pages/MerchantPages/ServiceManagement';
 import ProtectedRoute from './components/ProtectedRoutes/protectedroutes';
 
 const App: React.FC = () => {
+
   return (
     <AuthProvider>
       <Router>
@@ -20,9 +21,14 @@ const App: React.FC = () => {
           <Route path="/signup" element={<ProtectedRedirect route="/signup" />} />
           <Route path="/signin" element={<ProtectedRedirect route="/signin" />} />
           <Route path="/" element={<Navigate to="/signin" replace />} />
-          <Route path="/merchantdetails" element={<MerchantDetails />} />
 
           {/* Protected Routes */}
+          <Route path="/merchant/details" element={
+            <ProtectedRoute allowedRoles={['merchant']}>
+              <MerchantDetails />
+            </ProtectedRoute>
+          } />
+
           <Route path="/merchant/dashboard" element={
             <ProtectedRoute allowedRoles={['merchant']}>
               <MerchantDashboard />

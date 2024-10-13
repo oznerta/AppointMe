@@ -32,6 +32,11 @@ const WaitingApproval: React.FC = () => {
         );
     }
 
+    // // If the user is authenticated but their status is incomplete
+    // if (isAuth && status === 'incomplete') {
+    //     return <Navigate to="/merchant/details" />
+    // }
+
     // If the user is approved, redirect them to the merchant dashboard
     if (status === 'approved') {
         console.log("User is approved, redirecting to /merchant/dashboard");
