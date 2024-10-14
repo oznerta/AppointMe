@@ -1,77 +1,121 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth'; 
+import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../lib/firebase/config';
-import { getUserRole } from '../lib/firebase/utils'; 
+import { getUserRole, getUserData } from '../lib/firebase/utils'; // Import getUserData
+
+interface UserData {
+    id: string;
+    fullName?: string | null;
+    brandLogo?: string | null;
+    brandName?: string | null;
+    contactNumber?: string | null;
+    createdAt?: string | null;
+    email?: string | null;
+    idFile?: string | null;
+    role?: string | null;
+    selfie?: string | null;
+    serviceDescription?: string | null;
+    status?: string | null;
+    userType?: string | null;
+}
 
 interface AuthContextType {
-  user: FirebaseUser | null;  
-  role: 'superadmin' | 'merchant' | null; 
-  isAuth: boolean; 
-  status: string | null; // Change this from isApproved to status
-  setIsAuth: React.Dispatch<React.SetStateAction<boolean>>; 
-  signOutUser: () => void; 
+    user: FirebaseUser | null;
+    role: 'superadmin' | 'merchant' | null;
+    isAuth: boolean;
+    status: string | null;
+    fullName: string | null;
+    userData: UserData | null; // Add userData to the context
+    setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
+    signOutUser: () => void;
+    setStatus: (status: string) => void;
+    fetchUserData: () => Promise<void>; // Add fetchUserData function to the context
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
+    const context = useContext(AuthContext);
+    if (!context) throw new Error('useAuth must be used within an AuthProvider');
+    return context;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<FirebaseUser | null>(null);
-    const [role, setRole] = useState<'superadmin' | 'merchant' | null>(null); 
-    const [isAuth, setIsAuth] = useState(false); 
-    const [status, setStatus] = useState<string | null>(null); 
-    const [loading, setLoading] = useState(true);  
-  
+    const [role, setRole] = useState<'superadmin' | 'merchant' | null>(null);
+    const [isAuth, setIsAuth] = useState(false);
+    const [status, setStatus] = useState<string | null>(null);
+    const [fullName, setFullName] = useState<string | null>(null);
+    const [userData, setUserData] = useState<UserData | null>(null); // State for user data
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        setLoading(true);
-  
-        if (user) {
-          setUser(user);
-          setIsAuth(true);
-  
-          try {
-            const { role: userRole, status: userStatus } = await getUserRole(user.uid); 
-            console.log("User role:", userRole, "User status:", userStatus); // Log user role and status
-            setRole(userRole);
-            setStatus(userStatus);
-          } catch (error) {
-            console.error("Error fetching user role/status:", error);
-            setStatus(null); // Reset status on error
-          }
-        } else {
-          setUser(null);
-          setRole(null);
-          setIsAuth(false);
-          setStatus(null);
-        }
-  
-        setLoading(false);
-      });
-  
-      return () => unsubscribe();
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            setLoading(true);
+
+            if (user) {
+                setUser(user);
+                setIsAuth(true);
+
+                try {
+                    const { role: userRole, status: userStatus } = await getUserRole(user.uid);
+                    console.log("User role:", userRole, "User status:", userStatus); // Log user role and status
+                    setRole(userRole);
+                    setStatus(userStatus);
+
+                    // Fetch user data to get all user details
+                    const data = await getUserData(user.uid);
+                    setUserData(data); // Store the complete user data
+                    setFullName(data.fullName); // Store the full name
+                } catch (error) {
+                    console.error("Error fetching user role/status or data:", error);
+                    setStatus(null); // Reset status on error
+                }
+            } else {
+                setUser(null);
+                setRole(null);
+                setIsAuth(false);
+                setStatus(null);
+                setFullName(null); // Reset full name
+                setUserData(null); // Reset user data
+            }
+
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
     }, []);
-  
-    if (loading) {
-      return <div>Loading...</div>;
-    }
-  
-    const signOutUser = async () => {
-      await signOut(auth);
-      setUser(null);
-      setRole(null);
-      setIsAuth(false);
+
+    const fetchUserData = async () => {
+        if (user) {
+            try {
+                // Fetch and update user data
+                const data = await getUserData(user.uid);
+                setUserData(data); // Update the userData in state
+                setFullName(data.fullName); // Update fullName
+                console.log('User data refreshed:', data);
+            } catch (error) {
+                console.error('Error refreshing user data:', error);
+            }
+        }
     };
-  
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    const signOutUser = async () => {
+        await signOut(auth);
+        setUser(null);
+        setRole(null);
+        setIsAuth(false);
+        setFullName(null); // Reset full name on sign out
+        setUserData(null); // Reset user data on sign out
+    };
+
     return (
-      <AuthContext.Provider value={{ user, role, isAuth, status, setIsAuth, signOutUser }}>
-        {children}
-      </AuthContext.Provider>
+        <AuthContext.Provider value={{ user, role, isAuth, status, fullName, userData, setIsAuth, signOutUser, setStatus, fetchUserData }}>
+            {children}
+        </AuthContext.Provider>
     );
-  };
-  
+};

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Import useAuth hook
-import { createUserDocument } from '@/lib/firebase/utils';
+import { createGoogleUserDocument } from '@/lib/firebase/utils';
 
 export function SignInPage() {
     const navigate = useNavigate();
@@ -37,7 +37,7 @@ export function SignInPage() {
       
           if (isNewUser) {
             // Create user document in Firestore for new users
-            await createUserDocument(user); // Function to create user document
+            await createGoogleUserDocument(user); // Function to create user document
             navigate('/merchant/details'); // Redirect new users to the Merchant Details page
           } else {
             navigate('/merchant/dashboard');
@@ -62,7 +62,7 @@ export function SignInPage() {
                     <h1 className="text-xl font-semibold">Login to your account</h1>
                     <p>Welcome back! Please enter your details</p>
                 </div>
-                {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+                
                 
                 <form onSubmit={handleEmailSignIn}>
                     <Label htmlFor="email">Email</Label>
@@ -84,6 +84,7 @@ export function SignInPage() {
                         onChange={(e) => setPassword(e.target.value)} 
                         className="mb-4 shad-input"
                     />
+                    {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
                     <Button type="submit" className="w-full bg-primary-500 text-text-950 hover:bg-primary-300">Sign In</Button>
                 </form>
 

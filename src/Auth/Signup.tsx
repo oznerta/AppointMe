@@ -299,35 +299,35 @@ export function SignUpPage() {
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted");
-
+  
     // Validation checks
     if (password !== confirmPassword) {
       setErrorMessage("Passwords do not match!");
       console.error("Password mismatch");
       return;
     }
-
+  
     if (!brandLogo) {
       setErrorMessage("Please upload a brand logo.");
       console.error("Brand logo not uploaded");
       return;
     }
-
+  
     if (userType === "business" && !businessLicense) {
       setErrorMessage("Please upload your business license.");
       console.error("Business license not uploaded");
       return;
     }
-
+  
     if (userType === "freelancer" && (!idFile || !selfie)) {
       setErrorMessage("Please upload both your ID and a selfie.");
       console.error("ID file or selfie not uploaded");
       return;
     }
-
+  
     setErrorMessage(null);
     console.log("All validations passed");
-
+  
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -335,9 +335,9 @@ export function SignUpPage() {
         password
       );
       const user = userCredential.user;
-
+  
       const db = getFirestore();
-
+  
       // Create user document with minimal required fields
       const merchantData: MerchantData = {
         email: user.email,
@@ -348,75 +348,101 @@ export function SignUpPage() {
         createdAt: new Date(),
         status: "pending", // Set status to pending upon creation
         role: "merchant",
-        userType
+        userType,
       };
-
+  
       console.log("Merchant data prepared:", merchantData);
-
+  
       // Save user document in Firestore
       await setDoc(doc(db, "users", user.uid), merchantData);
       console.log("User document created successfully");
-
+  
       // Set authentication state
       setIsAuth(true);
       console.log("User authenticated");
-
-      // Upload files and update the document as needed...
+  
       const storage = getStorage();
-
+  
+      // File uploads and document updates (all promises in parallel)
+      const uploadTasks = [];
+  
       // Handle brand logo upload
       if (brandLogo) {
         const brandLogoRef = ref(storage, `merchants/${user.uid}/brandLogo`);
-        await uploadBytes(brandLogoRef, brandLogo);
-        merchantData.brandLogo = await getDownloadURL(brandLogoRef);
-        console.log(
-          "Brand logo uploaded and URL fetched:",
-          merchantData.brandLogo
-        );
+        const uploadBrandLogo = uploadBytes(brandLogoRef, brandLogo)
+          .then(async () => {
+            merchantData.brandLogo = await getDownloadURL(brandLogoRef);
+            console.log(
+              "Brand logo uploaded and URL fetched:",
+              merchantData.brandLogo
+            );
+          })
+          .catch((err) => console.error("Brand logo upload failed:", err));
+        uploadTasks.push(uploadBrandLogo);
       }
-
+  
       // Handle business license upload
       if (businessLicense && userType === "business") {
         const businessLicenseRef = ref(
           storage,
           `merchants/${user.uid}/businessLicense`
         );
-        await uploadBytes(businessLicenseRef, businessLicense);
-        merchantData.businessLicense = await getDownloadURL(businessLicenseRef);
-        console.log(
-          "Business license uploaded and URL fetched:",
-          merchantData.businessLicense
-        );
+        const uploadBusinessLicense = uploadBytes(
+          businessLicenseRef,
+          businessLicense
+        )
+          .then(async () => {
+            merchantData.businessLicense = await getDownloadURL(
+              businessLicenseRef
+            );
+            console.log(
+              "Business license uploaded and URL fetched:",
+              merchantData.businessLicense
+            );
+          })
+          .catch((err) => console.error("Business license upload failed:", err));
+        uploadTasks.push(uploadBusinessLicense);
       }
-
+  
       // Handle ID file upload
       if (idFile && userType === "freelancer") {
         const idFileRef = ref(storage, `merchants/${user.uid}/idFile`);
-        await uploadBytes(idFileRef, idFile);
-        merchantData.idFile = await getDownloadURL(idFileRef);
-        console.log("ID file uploaded and URL fetched:", merchantData.idFile);
+        const uploadIdFile = uploadBytes(idFileRef, idFile)
+          .then(async () => {
+            merchantData.idFile = await getDownloadURL(idFileRef);
+            console.log("ID file uploaded and URL fetched:", merchantData.idFile);
+          })
+          .catch((err) => console.error("ID file upload failed:", err));
+        uploadTasks.push(uploadIdFile);
       }
-
+  
       // Handle selfie upload
       if (selfie && userType === "freelancer") {
         const selfieRef = ref(storage, `merchants/${user.uid}/selfie`);
-        await uploadBytes(selfieRef, selfie);
-        merchantData.selfie = await getDownloadURL(selfieRef);
-        console.log("Selfie uploaded and URL fetched:", merchantData.selfie);
+        const uploadSelfie = uploadBytes(selfieRef, selfie)
+          .then(async () => {
+            merchantData.selfie = await getDownloadURL(selfieRef);
+            console.log("Selfie uploaded and URL fetched:", merchantData.selfie);
+          })
+          .catch((err) => console.error("Selfie upload failed:", err));
+        uploadTasks.push(uploadSelfie);
       }
-
-      // Finalize with additional data
+  
+      // Wait for all upload tasks to complete
+      await Promise.all(uploadTasks);
+  
+      // Update the user document with additional data
       await setDoc(doc(db, "users", user.uid), merchantData, { merge: true });
       console.log("User document updated with additional data");
-      setIsAuth(true);
-
-      // Redirect to the approval page
+  
+      // Redirect to the approval page after all uploads are complete
       setRedirect(true);
     } catch (error: any) {
       setErrorMessage(error.message);
       console.error("Error during signup process:", error);
     }
   };
+  
 
   const next = () => {
     if (step === 1) {
