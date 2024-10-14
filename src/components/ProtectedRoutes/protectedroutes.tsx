@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import NavigationMenu from '../NavigationMenu';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -43,7 +44,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
         return <Navigate to="/waiting-for-approval" />;
     }
 
-    return <>{children}</>; // Render the protected route component for approved users
-};
+    return (
+        <>
+          <NavigationMenu /> {/* Navigation bar */}
+          <div className="p-4">{children}</div> {/* Render protected content */}
+        </>
+      );
+    };
 
 export default ProtectedRoute;
