@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from './config'; 
 import { User } from 'firebase/auth';
 
@@ -12,12 +12,23 @@ export interface UserData {
   createdAt: string | null;
   email: string | null;
   idFile: string | null;
+  businessLicense: string | null;
   role: string | null;
   selfie: string | null;
   serviceDescription: string | null;
   status: string | null;
   userType: string | null;
 }
+
+// Define ServiceData interface
+export interface ServiceData {
+  serviceName: string;
+  description: string;
+  price: number;
+  userId: string; // ID of the user creating the service
+  createdAt: string; // Timestamp for when the service is created
+}
+
 
 export const getUserRole = async (userId: string): Promise<{ role: 'superadmin' | 'merchant' | null; status: string | null }> => {
   const userDoc = await getDoc(doc(db, 'users', userId));
@@ -58,22 +69,25 @@ export const createGoogleUserDocument = async (user: User) => {
 
 export const getUserData = async (uid: string): Promise<UserData> => {
   try {
-    const userDoc = await getDoc(doc(db, 'users', uid)); 
+    const userDoc = await getDoc(doc(db, 'users', uid));
     if (userDoc.exists()) {
+      const data = userDoc.data();
+
       return {
         id: userDoc.id,
-        fullName: userDoc.data().fullName || null,
-        brandLogo: userDoc.data().brandLogo || null,
-        brandName: userDoc.data().brandName || null,
-        contactNumber: userDoc.data().contactNumber || null,
-        createdAt: userDoc.data().createdAt || null,
-        email: userDoc.data().email || null,
-        idFile: userDoc.data().idFile || null,
-        role: userDoc.data().role || null,
-        selfie: userDoc.data().selfie || null,
-        serviceDescription: userDoc.data().serviceDescription || null,
-        status: userDoc.data().status || null,
-        userType: userDoc.data().userType || null,
+        fullName: data.fullName || null,
+        brandLogo: data.brandLogo || null,
+        brandName: data.brandName || null,
+        contactNumber: data.contactNumber || null,
+        createdAt: data.createdAt || null,
+        email: data.email || null,
+        idFile: data.idFile || null,
+        businessLicense: data.businessLicense || null, 
+        role: data.role || null,
+        selfie: data.selfie || null,
+        serviceDescription: data.serviceDescription || null,
+        status: data.status || null,
+        userType: data.userType || null,
       };
     } else {
       throw new Error("No such user found!");
@@ -83,6 +97,7 @@ export const getUserData = async (uid: string): Promise<UserData> => {
     throw error; // Propagate the error for handling in the caller
   }
 };
+
 
 export const getAllUsers = async () => {
   const usersCollection = collection(db, 'users');
@@ -96,6 +111,7 @@ export const getAllUsers = async () => {
     createdAt: doc.data().createdAt || null,
     email: doc.data().email || null,
     idFile: doc.data().idFile || null,
+    businessLicense: doc.data().businessLicense || null, 
     role: doc.data().role || null,
     selfie: doc.data().selfie || null,
     serviceDescription: doc.data().serviceDescription || null,
@@ -110,9 +126,31 @@ export const updateUserRole = async (userId: string, newRole: string) => {
   await updateDoc(userDocRef, { role: newRole });
 };
 
+export const updateUserStatus = async (userId: string, newStatus: string) => {
+  const userDocRef = doc(db, 'users', userId);
+  await updateDoc(userDocRef, { status: newStatus });
+};
+
 export const deleteUser = async (userId: string) => {
   const userDocRef = doc(db, 'users', userId);
   await deleteDoc(userDocRef);
 };
 
 // Ensure to export the UserData interface
+
+
+export const saveService = async (serviceData: ServiceData) => {
+  try {
+      // Create a new service document in the 'services' collection
+      const docRef = await addDoc(collection(db, 'services'), {
+          ...serviceData,
+          createdAt: new Date(), // Set createdAt to the current timestamp
+      });
+
+      console.log("Service added with ID: ", docRef.id);
+      return docRef.id; // Return the ID of the newly created document
+  } catch (error) {
+      console.error("Error adding service: ", error);
+      throw error; // Propagate the error for handling in the caller
+  }
+};
