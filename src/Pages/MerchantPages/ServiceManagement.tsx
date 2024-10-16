@@ -142,7 +142,7 @@ function ServiceManagement() {
     return `Available from ${service.startTime} to ${service.endTime}`;
   };
   
-  
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   return (
     <div>
@@ -216,83 +216,22 @@ function ServiceManagement() {
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="availability" className="text-right">Availability</Label>
               <div className="col-span-3">
-                <label className='mr-2'>
-                  <input type="checkbox" checked={newService.availability.includes('Sunday')} onChange={() => {
-                    setNewService(prev => ({
-                      ...prev,
-                      availability: prev.availability.includes('Sunday')
-                        ? prev.availability.filter(day => day !== 'Sunday')
-                        : [...prev.availability, 'Sunday']
-                    }));
-                  }} /> Su
-                </label>
-                {/* Repeat for other days of the week */}
-                <label className='mr-2'>
-                  <input type="checkbox" checked={newService.availability.includes('Monday')} onChange={() => {
-                    setNewService(prev => ({
-                      ...prev,
-                      availability: prev.availability.includes('Monday')
-                        ? prev.availability.filter(day => day !== 'Monday')
-                        : [...prev.availability, 'Monday']
-                    }));
-                  }} /> Mo
-                </label>
-
-                <label className='mr-2'>
-                  <input type="checkbox" checked={newService.availability.includes('Tuesday')} onChange={() => {
-                    setNewService(prev => ({
-                      ...prev,
-                      availability: prev.availability.includes('Tuesday')
-                        ? prev.availability.filter(day => day !== 'Tuesday')
-                        : [...prev.availability, 'Tuesday']
-                    }));
-                  }} /> Tu
-                </label>
-
-                <label className='mr-2'>
-                  <input type="checkbox" checked={newService.availability.includes('Wednesday')} onChange={() => {
-                    setNewService(prev => ({
-                      ...prev,
-                      availability: prev.availability.includes('Wednesday')
-                        ? prev.availability.filter(day => day !== 'Wednesday')
-                        : [...prev.availability, 'Wednesday']
-                    }));
-                  }} /> We
-                </label>
-
-                <label className='mr-2'>
-                  <input type="checkbox" checked={newService.availability.includes('Thursday')} onChange={() => {
-                    setNewService(prev => ({
-                      ...prev,
-                      availability: prev.availability.includes('Thursday')
-                        ? prev.availability.filter(day => day !== 'Thursday')
-                        : [...prev.availability, 'Thursday']
-                    }));
-                  }} /> Th
-                </label>
-
-                <label className='mr-2'>
-                  <input type="checkbox" checked={newService.availability.includes('Friday')} onChange={() => {
-                    setNewService(prev => ({
-                      ...prev,
-                      availability: prev.availability.includes('Friday')
-                        ? prev.availability.filter(day => day !== 'Friday')
-                        : [...prev.availability, 'Friday']
-                    }));
-                  }} /> Fr
-                </label>
-
-                <label className='mr-2'>
-                  <input type="checkbox" checked={newService.availability.includes('Saturday')} onChange={() => {
-                    setNewService(prev => ({
-                      ...prev,
-                      availability: prev.availability.includes('Saturday')
-                        ? prev.availability.filter(day => day !== 'Saturday')
-                        : [...prev.availability, 'Saturday']
-                    }));
-                  }} /> Sa
-                </label>
-                {/* Add checkboxes for other days */}
+              {daysOfWeek.map((day) => (
+  <label key={day} className="mr-2">
+    <input
+      type="checkbox"
+      checked={newService.availability.includes(day)}
+      onChange={() => {
+        setNewService(prev => ({
+          ...prev,
+          availability: prev.availability.includes(day)
+            ? prev.availability.filter(d => d !== day)
+            : [...prev.availability, day]
+        }));
+      }}
+    /> {day.slice(0, 2)}
+  </label>
+))}
               </div>
             </div>
           </div>
