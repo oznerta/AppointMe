@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import NavigationMenu from '../NavigationMenu';
+import NavigationMenu from '../SharedComponents/NavigationMenu';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;

@@ -19,6 +19,13 @@ body {
   background-color: var(--background);
 }
 
+.service-container {
+  list-style: none; /* Removes default list styling */
+  padding: 0; /* Removes padding */
+  margin: 0; /* Removes margin */
+}
+
+
 @layer components {
   /* SHADCN COMPONENTS */
   /* Form */

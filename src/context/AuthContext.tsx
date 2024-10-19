@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const data = await getUserData(user.uid);
                 setUserData(data); // Update the userData in state
                 setFullName(data.fullName); // Update fullName
-                console.log('User data refreshed:', data);
+                
             } catch (error) {
                 console.error('Error refreshing user data:', error);
             }

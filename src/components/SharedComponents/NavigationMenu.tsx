@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext'; // Import the AuthContext for user info
+import { useAuth } from '../../context/AuthContext'; // Import the AuthContext for user info
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MdLogout } from "react-icons/md";
@@ -24,7 +24,7 @@ const NavigationMenu: React.FC = () => {
         <nav className="bg-white shadow-md p-4 flex justify-between items-center">
             <div className="flex items-center space-x-2">
                 <img src="../assets/images/logo.png" alt="logo" className="h-14 w-14" />
-                <h1 className="font-bold text-2xl">Appoint.Me</h1>
+                <h1 className="font-semibold text-xl">Appoint.Me</h1>
             </div>
 
             <DropdownMenu>
