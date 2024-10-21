@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../lib/firebase/config';
 import { getUserRole, getUserData } from '../lib/firebase/utils'; // Import getUserData
+import LoadingComponent from './../components/SharedComponents/LoadingComponent';
 
 interface UserData {
     id: string;
@@ -54,16 +55,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setLoading(true);
+            // Simulate a loading progress (0-100)
+            let progress = 0;
 
             if (user) {
                 setUser(user);
                 setIsAuth(true);
+                progress = 50; // Update progress
 
                 try {
                     const { role: userRole, status: userStatus } = await getUserRole(user.uid);
                     console.log("User role:", userRole, "User status:", userStatus); // Log user role and status
                     setRole(userRole);
                     setStatus(userStatus);
+                    progress = 75; // Update progress
 
                     // Fetch user data to get all user details
                     const data = await getUserData(user.uid);
@@ -82,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUserData(null); // Reset user data
             }
 
+            progress = 100; // Complete progress
             setLoading(false);
         });
 
@@ -95,16 +101,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const data = await getUserData(user.uid);
                 setUserData(data); // Update the userData in state
                 setFullName(data.fullName); // Update fullName
-                
             } catch (error) {
                 console.error('Error refreshing user data:', error);
             }
         }
     };
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
 
     const signOutUser = async () => {
         await signOut(auth);
@@ -114,6 +115,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setFullName(null); // Reset full name on sign out
         setUserData(null); // Reset user data on sign out
     };
+
+    if (loading) {
+        return (
+            <div>
+                <LoadingComponent/>
+            </div>
+        );
+    }
 
     return (
         <AuthContext.Provider value={{ user, role, isAuth, status, fullName, userData, setIsAuth, signOutUser, setStatus, fetchUserData }}>

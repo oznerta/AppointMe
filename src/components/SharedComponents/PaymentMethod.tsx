@@ -13,7 +13,7 @@ interface PaymentMethodProps {
     selectedTimeSlot: string;
     servicePrice: number;
     serviceName: string;
-    serviceId: string;  
+    serviceId: string;
     merchantId: string;
     onClose: () => void;
 }
@@ -52,25 +52,25 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             ? `${details.payer.name.given_name} ${details.payer.name.surname}`
             : 'Unknown Payer';
         console.log('Transaction completed by ' + payerName);
-    
+
         const getServiceDateTime = (selectedDate: Date | null, selectedTimeSlot: string) => {
             if (!selectedDate) {
                 throw new Error("selectedDate cannot be null");
             }
-            
+
             const [timeStart] = selectedTimeSlot.split(" - ");
             const serviceDateTime = new Date(selectedDate);
             const [hours, minutes] = timeStart.split(':').map(Number);
-        
+
             serviceDateTime.setHours(hours);
             serviceDateTime.setMinutes(minutes);
-        
+
             return serviceDateTime;
         };
-        
+
         const serviceDateTime = getServiceDateTime(selectedDate, selectedTimeSlot);
         const releaseTime = new Date(serviceDateTime.getTime() + 24 * 60 * 60 * 1000).toISOString();
-        
+
         const paymentData = {
             customerName,
             customerEmail,
@@ -85,19 +85,19 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             merchantId,
             releaseTime,
         };
-    
+
         try {
             const docRef = await addDoc(collection(db, 'payments'), paymentData);
             console.log("Payment saved with ID: ", docRef.id);
 
             // Update the merchant's pending balance
             await updateMerchantBalance();
-            
+
             const serviceRef = doc(db, 'services', serviceId);
             await updateDoc(serviceRef, {
                 bookingsCount: increment(1),
             });
-    
+
             console.log(`Updated bookingsCount for service ID: ${serviceId}`);
             onClose();
         } catch (error) {
@@ -119,19 +119,43 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                 </button>
             </div>
 
-            <h2 className="font-semibold text-lg">Payment Method</h2>
-            <div className="text-sm mb-4">
-                <p><strong>Customer Name:</strong> {customerName}</p>
-                <p><strong>Email:</strong> {customerEmail}</p>
-                <p><strong>Date:</strong> {selectedDate ? selectedDate.toDateString() : 'N/A'}</p>
-                <p><strong>Time Slot:</strong> {selectedTimeSlot}</p>
-                <p><strong>Price:</strong> ${servicePrice.toFixed(2)}</p>
+            <div className='bg-primary-50 px-10 py-6 rounded-xl shadow-md z-20'>
+                <div className="text-sm ">
+                    <div className="flex flex-col space-y-2">
+                        <div className="flex justify-between">
+                            <span className="font-medium">Name:</span>
+                            <span>{customerName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="font-medium">Email:</span>
+                            <span>{customerEmail}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="font-medium">Date:</span>
+                            <span>{selectedDate ? selectedDate.toDateString() : 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="font-medium">Service:</span>
+                            <span>{serviceName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="font-medium">Time Slot:</span>
+                            <span>{selectedTimeSlot}</span>
+                        </div>
+                        
+                        <div className="flex justify-between border-t border-slate-300 pt-2 mt-2">
+                            <span className="font-medium">Price:</span>
+                            <span className="text-lg font-semibold">${servicePrice.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             {errorMessage && <div className="text-red-500">{errorMessage}</div>}
 
-            <div className="flex flex-col">
-                <h3 className="text-md">Select Payment Method:</h3>
+            <div className="flex flex-col bg-primary-100 mt-[-30px] rounded-xl px-10 py-6">
+                <h3 className="text-sm mb-2 font-medium">Select Payment Method:</h3>
                 <PayPalScriptProvider options={{ clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID }}>
                     <PayPalButtons
                         createOrder={async (_, actions) => {

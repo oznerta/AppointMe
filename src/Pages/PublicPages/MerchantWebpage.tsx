@@ -231,8 +231,8 @@ const MerchantWebpage: React.FC = () => {
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent via-gray-100 to-white/90 blur-sm pointer-events-none"></div>
     
                 <div className="absolute bottom-0 left-0 right-0 flex justify-center mb-2 items-center gap-1">
-                    <img src={logo} alt="Appoint.Me Logo" className="h-4 object-contain" />
-                    <p className="text-xs font-semibold">Appoint.Me</p>
+                    <img src={logo} alt="Appoint.Me Logo" className="h-10 object-contain" />
+                    <p className="text-base font-semibold">Appoint.Me</p>
                 </div>
             </div>
         </div>

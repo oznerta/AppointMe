@@ -58,7 +58,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ service, on
     };
 
     return (
-        <div className="flex flex-col gap-4 w-[500px]">
+        <div className="flex flex-col gap-4 w-[500px] ">
             {/* Back Button */}
             <div className="flex items-start justify-start mt-6">
                 <button onClick={onClose} className="flex items-center justify-center text-gray-700 hover:text-gray-500">
@@ -66,7 +66,8 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ service, on
                 </button>
             </div>
 
-            {/* Customer Name */}
+            <div className='flex flex-col gap-4 bg-primary-50 px-10 py-6 rounded-xl'>
+                {/* Customer Name */}
             <Input
                 type="text"
                 placeholder="Your Name"
@@ -128,6 +129,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ service, on
                     {timeSlots}
                 </SelectContent>
             </Select>
+            </div>
 
             <Button onClick={handleNext}>Next</Button>
         </div>
