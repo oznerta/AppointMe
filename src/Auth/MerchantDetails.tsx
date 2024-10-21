@@ -130,6 +130,13 @@ const MerchantDetails: React.FC = () => {
         // Save the user document to Firestore after all uploads
         await setDoc(doc(db, "users", user.uid), merchantData);
         setIsAuth(true);
+
+        // Initialize merchant balance
+        await setDoc(doc(db, "merchantBalances", user.uid), {
+            balance: 0, // Initial balance
+            pendingBalance: 0,
+            lastUpdated: new Date(), // Set the current timestamp
+        });
         
         // Fetch updated user data from Firestore
     const updatedUserDoc = await getDoc(doc(db, "users", user.uid));

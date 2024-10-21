@@ -27,8 +27,6 @@
         "./src/*"
       ]
     }
-
-
   },
-  "include": ["src", "@/components", "@"]
+  "include": ["src", "src/types", "src/components/**/*", "src/types/**/*.d.ts"]  // Adjusted include paths
 }

@@ -18,6 +18,7 @@ interface UserData {
     status?: string | null;
     userType?: string | null;
     businessLicense?: string | null;
+    paypalEmail?: string | null;
 }
 
 interface AuthContextType {

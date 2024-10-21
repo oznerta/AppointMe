@@ -154,3 +154,13 @@ export const saveService = async (serviceData: ServiceData) => {
       throw error; // Propagate the error for handling in the caller
   }
 };
+
+
+export const calculateReleaseTime = (selectedDate: Date, selectedTimeSlot: string) => {
+  const [startTime] = selectedTimeSlot.split(" - ");
+  const releaseDate = new Date(selectedDate);
+  const [hours, minutes] = startTime.split(":").map(Number);
+
+  releaseDate.setHours(hours + 24, minutes); // Add 24 hours to the selected time
+  return releaseDate;
+};

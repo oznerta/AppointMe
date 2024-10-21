@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase/config';
 import { useAuth } from '../../context/AuthContext';
-import { FaInstagram, FaFacebook, FaTwitter, FaTiktok, FaEnvelope } from 'react-icons/fa';
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { FaInstagram } from 'react-icons/fa';
+
+import { FaXTwitter } from "react-icons/fa6";
+import { SlSocialFacebook } from "react-icons/sl";
+import { RiTiktokLine } from "react-icons/ri";
+import { HiOutlineMail } from "react-icons/hi";
 
 interface Service {
     id: string;
+    userId: string; // Added userId to the Service interface
     serviceName: string;
     description: string;
     order: number;
@@ -30,9 +36,10 @@ const PhonePreview = () => {
 
         const userId = user.uid;
 
-        // Fetch services
+        // Fetch services for the current user
         const servicesCollection = collection(db, 'services');
-        const unsubscribeServices = onSnapshot(servicesCollection, (snapshot) => {
+        const servicesQuery = query(servicesCollection, where("userId", "==", userId)); // Query to filter by userId
+        const unsubscribeServices = onSnapshot(servicesQuery, (snapshot) => {
             const serviceList: Service[] = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data() as Omit<Service, 'id'>,
@@ -76,20 +83,19 @@ const PhonePreview = () => {
     const getSocialIcon = (platform: string, size: string = 'h-2 w-2') => {
         switch (platform) {
             case 'facebook':
-                return <FaFacebook className={`${size}`} />;
+                return <SlSocialFacebook className={`${size}`} />;
             case 'instagram':
                 return <FaInstagram className={`${size}`} />;
             case 'twitter':
-                return <FaTwitter className={`${size}`} />;
+                return <FaXTwitter className={`${size}`} />;
             case 'tiktok':
-                return <FaTiktok className={`${size}`} />;
+                return <RiTiktokLine className={`${size}`} />;
             case 'email':
-                return <FaEnvelope className={`${size}`} />;
+                return <HiOutlineMail className={`${size}`} />;
             default:
                 return null;
         }
     };
-    
 
     return (
         <div className="relative flex justify-center h-[540px] w-[270px] border-4 border-primary-50 rounded-2xl bg-[radial-gradient(circle,rgba(105,105,105,0.4),rgba(169,169,169,0.5),transparent)]"
@@ -100,7 +106,11 @@ const PhonePreview = () => {
                     {/* Brand Logo */}
                     <div className='mt-6'>
                         <div className='flex flex-col justify-center items-center'>
-                            {brandLogo && <img src={brandLogo} alt={`${brandName} Logo`} className="h-16 rounded-[100%] mb-2" />}
+                            {brandLogo && (
+                                <div className="relative w-16 h-16 rounded-full overflow-hidden mb-2">
+                                    <img src={brandLogo} alt={`${brandName} Logo`} className="object-cover w-full h-full" />
+                                </div>
+                            )}
                             {brandName && <h1 className="text-center font-semibold text-sm">{brandName}</h1>}
                         </div>
 
@@ -119,19 +129,14 @@ const PhonePreview = () => {
                         <div>
                             {services.map(service => (
                                 <div key={service.id} className="flex justify-between items-center mb-1 bg-primary-50 gap-4 p-2 rounded">
-                                    <h3 className="font-medium text-xs">{service.serviceName}</h3>
+                                    <h3 className="font-medium text-[10px]">{service.serviceName}</h3>
 
-                                    <div className='bg-black text-white p-2 rounded cursor-pointer hover:scale-95'>
-                                        <h3 className='font-medium text-xs'>Book Now</h3>
-                                    </div>
+                                    
+                                        <h3 className='font-medium text-[8px]'>Book Now</h3>
+                                    
                                 </div>
                             ))}
                         </div>
-                    </div>
-
-                    {/* Social Links */}
-                    <div>
-
                     </div>
                 </div>
             </ScrollArea>
@@ -143,9 +148,6 @@ const PhonePreview = () => {
                 <img src="../../../public/assets/images/logo.png" alt="logo" className='h-9' />
                 <h1 className='text-xs font-medium'>Appoint.Me</h1>
             </div>
-
-
-
         </div>
     );
 };

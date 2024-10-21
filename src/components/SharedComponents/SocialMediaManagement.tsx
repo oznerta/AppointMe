@@ -14,10 +14,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CiSquarePlus } from 'react-icons/ci';
-import { FaInstagram, FaFacebook, FaTwitter, FaTiktok, FaEnvelope } from 'react-icons/fa';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { FiEdit2 } from "react-icons/fi";
+import { FaInstagram } from 'react-icons/fa';
+import { FaXTwitter } from "react-icons/fa6";
+import { SlSocialFacebook } from "react-icons/sl";
+import { RiTiktokLine } from "react-icons/ri";
+import { HiOutlineMail } from "react-icons/hi";
 
 interface SocialMediaLink {
   platform: keyof Omit<SocialMediaLinks, 'id'>; // Exclude 'id' from the keys
@@ -49,52 +54,46 @@ const orderKeys: {
   tiktok: 'tiktokOrder',
 };
 
-
-
 function SocialMediaManagement() {
   const MAX_SOCIAL_LINKS = 4;
   const [socialLinks, setSocialLinks] = useState<SocialMediaLink[]>([]);
   const [newLink, setNewLink] = useState<string>('');
-  const [selectedPlatform, setSelectedPlatform] = useState<keyof Omit<SocialMediaLinks, 'id'> | null>(null); // Updated type
+  const [selectedPlatform, setSelectedPlatform] = useState<keyof Omit<SocialMediaLinks, 'id'> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   const fetchSocialLinks = async () => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-  if (user) {
-    try {
-      const socialLinksDocRef = doc(db, 'socialLinks', user.uid);
-      const docSnapshot = await getDoc(socialLinksDocRef);
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const socialLinksDocRef = doc(db, 'socialLinks', user.uid);
+        const docSnapshot = await getDoc(socialLinksDocRef);
 
-      if (docSnapshot.exists()) {
-        const data = docSnapshot.data() as Record<string, string | number | undefined>;
-        const linksArray: SocialMediaLink[] = Object.entries(data)
-          .filter(([key, value]) => typeof value === 'string' && key in orderKeys)
-          .map(([key, value]) => {
-            const platformKey = key as keyof Omit<SocialMediaLinks, 'id'>;
-            const orderKey = orderKeys[platformKey]; 
-            const order = orderKey ? (data[orderKey] ?? 0) : 0;
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data() as Record<string, string | number | undefined>;
+          const linksArray: SocialMediaLink[] = Object.entries(data)
+            .filter(([key, value]) => typeof value === 'string' && key in orderKeys)
+            .map(([key, value]) => {
+              const platformKey = key as keyof Omit<SocialMediaLinks, 'id'>;
+              const orderKey = orderKeys[platformKey]; 
+              const order = orderKey ? (data[orderKey] ?? 0) : 0;
 
-            return {
-              platform: platformKey,
-              link: value as string,
-              order: order as number,
-            };
-          });
+              return {
+                platform: platformKey,
+                link: value as string,
+                order: order as number,
+              };
+            });
 
-        linksArray.sort((a, b) => a.order - b.order);
-        setSocialLinks(linksArray);
+          linksArray.sort((a, b) => a.order - b.order);
+          setSocialLinks(linksArray);
+        }
+      } catch (error) {
+        console.error('Error fetching social links:', error);
       }
-    } catch (error) {
-      console.error('Error fetching social links:', error);
     }
-  }
-};
-
-
-  
-  
+  };
 
   useEffect(() => {
     fetchSocialLinks();
@@ -130,7 +129,6 @@ function SocialMediaManagement() {
       }
     }
   };
-  
 
   const resetForm = () => {
     setNewLink(''); 
@@ -139,7 +137,7 @@ function SocialMediaManagement() {
     setEditMode(false);
   };
 
-  const openDialog = (platform?: keyof Omit<SocialMediaLinks, 'id'>) => { // Updated type
+  const openDialog = (platform?: keyof Omit<SocialMediaLinks, 'id'>) => {
     setEditMode(!!platform);
     setSelectedPlatform(platform || null);
     
@@ -161,7 +159,6 @@ function SocialMediaManagement() {
         const socialLinksDocRef = doc(db, 'socialLinks', user.uid);
         const updatedLinks = socialLinks.filter(link => link.platform !== platform);
   
-        // Use the correct order key for deletion
         const orderKey = orderKeys[platform];
         if (orderKey) {
           await updateDoc(socialLinksDocRef, {
@@ -169,7 +166,6 @@ function SocialMediaManagement() {
             [orderKey]: deleteField(),
           });
   
-          // Update order for remaining links
           updatedLinks.forEach((link, index) => {
             link.order = index; // Set order correctly
           });
@@ -187,7 +183,6 @@ function SocialMediaManagement() {
       }
     }
   };
-  
 
   const getAvailableSocials = () => {
     const allSocials = ['instagram', 'facebook', 'twitter', 'tiktok', 'email'] as const;
@@ -196,8 +191,11 @@ function SocialMediaManagement() {
 
   return (
     <div className='mb-10'>
-      <div className="flex justify-between">
-        <h1 className="font-semibold text-xl">Socials</h1>
+      <div className="flex justify-between mt-6">
+        <div className='flex gap-2 items-center'>
+          <span className='h-3 w-3 rounded bg-primary-500 ml-3'></span>
+          <h1 className="font-semibold text-base">Socials</h1>
+        </div>
         <div>
           <TooltipProvider>
             <Tooltip>
@@ -221,31 +219,34 @@ function SocialMediaManagement() {
           </DialogHeader>
 
           <div className="mt-4">
-            <Select onValueChange={(value) => {
-              setSelectedPlatform(value as keyof Omit<SocialMediaLinks, 'id'>);
-              setNewLink('');
-            }}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Social Media" />
-              </SelectTrigger>
-              <SelectContent>
-                {getAvailableSocials().map((social) => (
-                  <SelectItem key={social} value={social}>
-                    <div className="flex items-center">
-                      {social === 'instagram' && <FaInstagram className="mr-2" />}
-                      {social === 'facebook' && <FaFacebook className="mr-2" />}
-                      {social === 'twitter' && <FaTwitter className="mr-2" />}
-                      {social === 'tiktok' && <FaTiktok className="mr-2" />}
-                      {social === 'email' && <FaEnvelope className="mr-2" />}
-                      {social}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Show the Select dropdown only if not in edit mode */}
+            {!editMode && (
+              <Select onValueChange={(value) => {
+                setSelectedPlatform(value as keyof Omit<SocialMediaLinks, 'id'>);
+                setNewLink('');
+              }}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Social Media" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableSocials().map((social) => (
+                    <SelectItem key={social} value={social}>
+                      <div className="flex items-center">
+                        {social === 'instagram' && <FaInstagram className="mr-2" />}
+                        {social === 'facebook' && <SlSocialFacebook className="mr-2" />}
+                        {social === 'twitter' && <FaXTwitter className="mr-2" />}
+                        {social === 'tiktok' && <RiTiktokLine className="mr-2" />}
+                        {social === 'email' && <HiOutlineMail className="mr-2" />}
+                        {social}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {selectedPlatform && (
               <div className="mt-4">
-                <Label htmlFor="newLinkInput">{selectedPlatform}</Label>
+                <Label htmlFor="newLinkInput">{editMode ? selectedPlatform : "Link"}</Label>
                 <Input
                   id="newLinkInput"
                   placeholder={`Enter your ${selectedPlatform}`}
@@ -264,7 +265,7 @@ function SocialMediaManagement() {
         </DialogContent>
       </Dialog>
 
-      <div className="mt-6">
+      <div>
         {socialLinks.map(({ platform, link }) => (
           <div key={platform} className="flex items-center space-x-2 mb-2">
             <div className="relative w-full">
@@ -275,10 +276,10 @@ function SocialMediaManagement() {
               />
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
                 {platform === 'instagram' && <FaInstagram />}
-                {platform === 'facebook' && <FaFacebook />}
-                {platform === 'twitter' && <FaTwitter />}
-                {platform === 'tiktok' && <FaTiktok />}
-                {platform === 'email' && <FaEnvelope />}
+                {platform === 'facebook' && <SlSocialFacebook />}
+                {platform === 'twitter' && <FaXTwitter />}
+                {platform === 'tiktok' && <RiTiktokLine />}
+                {platform === 'email' && <HiOutlineMail />}
               </span>
             </div>
             <FiEdit2 className="ml-2 cursor-pointer text-primary-500 hover:text-primary-300 text-xl" onClick={() => openDialog(platform)} />

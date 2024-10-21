@@ -356,6 +356,13 @@ export function SignUpPage() {
       // Save user document in Firestore
       await setDoc(doc(db, "users", user.uid), merchantData);
       console.log("User document created successfully");
+
+      // Initialize merchant balance
+      await setDoc(doc(db, "merchantBalances", user.uid), {
+        balance: 0, // Initial balance
+        pendingBalance: 0,
+        lastUpdated: new Date(), // Set the current timestamp
+      });
   
       // Set authentication state
       setIsAuth(true);
