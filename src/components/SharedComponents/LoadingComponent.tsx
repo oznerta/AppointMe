@@ -23,7 +23,7 @@ const LoadingComponent = () => {
         <div className="flex items-center justify-center min-h-screen bg-gray-100"> {/* Full viewport height */}
             <div className="flex flex-col items-center justify-center w-[250px]">
                 <Progress value={progress} />
-                <span className="mt-2">Getting ready...</span>
+                <span className="mt-2">Loading...</span>
             </div>
         </div>
     );
