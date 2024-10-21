@@ -55,20 +55,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setLoading(true);
-            // Simulate a loading progress (0-100)
-            let progress = 0;
+            
 
             if (user) {
                 setUser(user);
                 setIsAuth(true);
-                progress = 50; // Update progress
+                
 
                 try {
                     const { role: userRole, status: userStatus } = await getUserRole(user.uid);
                     console.log("User role:", userRole, "User status:", userStatus); // Log user role and status
                     setRole(userRole);
                     setStatus(userStatus);
-                    progress = 75; // Update progress
+                  
 
                     // Fetch user data to get all user details
                     const data = await getUserData(user.uid);
@@ -87,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUserData(null); // Reset user data
             }
 
-            progress = 100; // Complete progress
+          
             setLoading(false);
         });
 
